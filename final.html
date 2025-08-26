@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FINAL WORKING - Bilal & Köpüş</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #2c3e50;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            font-family: Arial, sans-serif;
+        }
+        
+        #game-container {
+            border: 2px solid #34495e;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        }
+        
+        #loading-screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #34495e;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            z-index: 1000;
+            transition: opacity 0.5s ease;
+        }
+        
+        #loading-bar {
+            width: 300px;
+            height: 20px;
+            background-color: #2c3e50;
+            border: 2px solid #ecf0f1;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-top: 20px;
+        }
+        
+        #loading-progress {
+            height: 100%;
+            background: linear-gradient(90deg, #3498db, #2ecc71);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+        
+        .hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+        
+        .completely-hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div id="game-container">
+        <div id="loading-screen">
+            <h2>Bilal & Köpüş: Mission Asena</h2>
+            <p>Loading game assets...</p>
+            <div id="loading-bar">
+                <div id="loading-progress"></div>
+            </div>
+            <p id="loading-text">0%</p>
+        </div>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/phaser@3.70.0/dist/phaser.min.js"></script>
+    
+    <script>
+        console.log('🎮 Starting Final Working Game...');
+        
+        // Global game data
+        window.gameData = {
+            playerPosition: { x: 100, y: 500 },
+            companionPosition: { x: 50, y: 500 },
+            segment1Width: 6000,
+            gameHeight: 720,
+            worldWidth: 30000,
+            playerSpeed: 200,
+            jumpVelocity: -400,
+            companionSpeed: 180,
+            companionCatchUpSpeed: 250,
+            followDistance: 80,
+            debug: true,
+            currentZone: 'kusadasi'
+        };
+        
+        class FinalPreloadScene extends Phaser.Scene {
+            constructor() {
+                super({ key: 'FinalPreloadScene' });
+            }
+            
+            preload() {
+                console.log('✅ FinalPreloadScene: preload started');
+                
+                // Get loading elements
+                this.loadingScreen = document.getElementById('loading-screen');
+                this.loadingProgress = document.getElementById('loading-progress');
+                this.loadingText = document.getElementById('loading-text');
+                
+                if (!this.loadingScreen) {
+                    console.error('❌ Loading screen elements not found!');
+                    return;
+                }
+                
+                console.log('✅ Loading screen elements found');
+                
+                // NO FILE LOADING - everything created with graphics
+                console.log('✅ No files to load - will create with graphics');
+            }
+            
+            create() {
+                console.log('✅ FinalPreloadScene: create() - Creating assets');
+                
+                this.createAllAssets();
+            }
+            
+            async createAllAssets() {
+                // Update progress
+                this.updateProgress(20, 'Creating Bilal...');
+                await this.wait(300);
+                
+                // Create Bilal
+                const bilal = this.add.graphics();
+                bilal.fillStyle(0x8B4513);
+                bilal.fillRect(16, 16, 32, 48);
+                bilal.fillStyle(0xDEB887);
+                bilal.fillRect(20, 8, 24, 24);
+                bilal.fillStyle(0x000000);
+                bilal.fillRect(24, 16, 4, 4);
+                bilal.fillRect(36, 16, 4, 4);
+                bilal.generateTexture('bilal', 64, 64);
+                bilal.destroy();
+                
+                this.updateProgress(40, 'Creating Köpüş...');
+                await this.wait(300);
+                
+                // Create Köpüş
+                const kopus = this.add.graphics();
+                kopus.fillStyle(0xFFFFFF);
+                kopus.fillRect(8, 16, 16, 12);
+                kopus.fillRect(6, 12, 8, 8);
+                kopus.fillStyle(0x000000);
+                kopus.fillRect(8, 14, 2, 2);
+                kopus.fillRect(10, 16, 2, 2);
+                kopus.generateTexture('kopus', 32, 32);
+                kopus.destroy();
+                
+                this.updateProgress(60, 'Creating ground...');
+                await this.wait(300);
+                
+                // Create ground
+                const ground = this.add.graphics();
+                ground.fillStyle(0x8B4513);
+                ground.fillRect(0, 0, 64, 50);
+                ground.fillStyle(0x228B22);
+                ground.fillRect(0, 0, 64, 10);
+                ground.generateTexture('ground_tile', 64, 50);
+                ground.destroy();
+                
+                this.updateProgress(80, 'Creating backgrounds...');
+                await this.wait(300);
+                
+                // Create sky
+                const sky = this.add.graphics();
+                sky.fillGradientStyle(0x87CEEB, 0x87CEEB, 0xE0F6FF, 0xE0F6FF, 1);
+                sky.fillRect(0, 0, 1280, 720);
+                sky.generateTexture('sky_bg', 1280, 720);
+                sky.destroy();
+                
+                // Create sea
+                const sea = this.add.graphics();
+                sea.fillGradientStyle(0x4682B4, 0x4682B4, 0x191970, 0x191970, 1);
+                sea.fillRect(0, 0, 1280, 200);
+                sea.generateTexture('sea_bg', 1280, 200);
+                sea.destroy();
+                
+                this.updateProgress(100, 'Ready to play!');
+                console.log('✅ All assets created successfully');
+                
+                await this.wait(500);
+                
+                // Hide loading and start game
+                console.log('✅ Hiding loading screen');
+                if (this.loadingScreen) {
+                    this.loadingScreen.classList.add('hidden');
+                    // Completely remove after transition
+                    setTimeout(() => {
+                        this.loadingScreen.classList.add('completely-hidden');
+                    }, 600);
+                }
+                
+                console.log('✅ Starting game scene');
+                this.scene.start('FinalGameScene');
+            }
+            
+            updateProgress(percent, message) {
+                console.log(`📊 ${percent}% - ${message}`);
+                if (this.loadingProgress && this.loadingText) {
+                    this.loadingProgress.style.width = percent + '%';
+                    this.loadingText.textContent = percent + '%';
+                }
+            }
+            
+            wait(ms) {
+                return new Promise(resolve => setTimeout(resolve, ms));
+            }
+        }
+        
+        class FinalGameScene extends Phaser.Scene {
+            constructor() {
+                super({ key: 'FinalGameScene' });
+            }
+            
+            create() {
+                console.log('✅ FinalGameScene: create started');
+                
+                // Set world bounds
+                this.physics.world.setBounds(0, 0, window.gameData.segment1Width, window.gameData.gameHeight);
+                
+                // Create backgrounds
+                this.sky = this.add.tileSprite(0, 0, window.gameData.segment1Width, window.gameData.gameHeight, 'sky_bg').setOrigin(0, 0);
+                this.sea = this.add.tileSprite(0, window.gameData.gameHeight - 200, window.gameData.segment1Width, 200, 'sea_bg').setOrigin(0, 0);
+                this.sky.setScrollFactor(0.2);
+                this.sea.setScrollFactor(0.5);
+                
+                // Create ground
+                this.ground = this.physics.add.staticGroup();
+                const groundY = window.gameData.gameHeight - 50;
+                
+                for (let x = 0; x < window.gameData.segment1Width; x += 64) {
+                    const tile = this.add.image(x + 32, groundY + 25, 'ground_tile');
+                    this.physics.add.existing(tile, true);
+                    this.ground.add(tile);
+                }
+                
+                // Create player
+                this.player = this.physics.add.sprite(
+                    window.gameData.playerPosition.x, 
+                    window.gameData.playerPosition.y, 
+                    'bilal'
+                );
+                this.player.setCollideWorldBounds(true);
+                this.player.setBounce(0.2);
+                this.player.setOrigin(0.5, 1);
+                this.physics.add.collider(this.player, this.ground);
+                
+                // Create companion
+                this.companion = this.physics.add.sprite(
+                    window.gameData.companionPosition.x,
+                    window.gameData.companionPosition.y,
+                    'kopus'
+                );
+                this.companion.setCollideWorldBounds(true);
+                this.companion.setBounce(0.2);
+                this.companion.setOrigin(0.5, 1);
+                this.physics.add.collider(this.companion, this.ground);
+                
+                // Set up camera
+                this.cameras.main.setBounds(0, 0, window.gameData.segment1Width, window.gameData.gameHeight);
+                this.cameras.main.startFollow(this.player, true, 0.1, 0.1);
+                this.cameras.main.setDeadzone(100, 50);
+                
+                // Set up input
+                this.keys = this.input.keyboard.addKeys('W,A,S,D,E');
+                
+                // Add UI
+                this.add.text(20, 20, '🎮 FINAL WORKING VERSION - Use WASD to move!', {
+                    fontSize: '18px',
+                    fill: '#ffffff',
+                    stroke: '#000000',
+                    strokeThickness: 2
+                }).setScrollFactor(0);
+                
+                this.debugText = this.add.text(20, 50, '', {
+                    fontSize: '14px',
+                    fill: '#ffffff',
+                    stroke: '#000000',
+                    strokeThickness: 1
+                }).setScrollFactor(0);
+                
+                console.log('✅ FinalGameScene: setup complete - GAME IS READY!');
+            }
+            
+            update() {
+                // Player movement
+                if (this.keys.A.isDown) {
+                    this.player.setVelocityX(-window.gameData.playerSpeed);
+                    this.player.setFlipX(true);
+                    this.player.setTint(0x00ff00);
+                } else if (this.keys.D.isDown) {
+                    this.player.setVelocityX(window.gameData.playerSpeed);
+                    this.player.setFlipX(false);
+                    this.player.setTint(0x00ff00);
+                } else {
+                    this.player.setVelocityX(0);
+                    this.player.setTint(0xffffff);
+                }
+                
+                if (this.keys.W.isDown && this.player.body.touching.down) {
+                    this.player.setVelocityY(window.gameData.jumpVelocity);
+                    this.player.setTint(0xffff00);
+                }
+                
+                // Companion following
+                const distance = Phaser.Math.Distance.Between(
+                    this.companion.x, this.companion.y,
+                    this.player.x, this.player.y
+                );
+                
+                const targetX = this.player.x - (this.player.flipX ? -80 : 80);
+                
+                if (distance > 120) {
+                    if (this.companion.x < targetX) {
+                        this.companion.setVelocityX(window.gameData.companionCatchUpSpeed);
+                        this.companion.setFlipX(false);
+                        this.companion.setTint(0x00ff00);
+                    } else {
+                        this.companion.setVelocityX(-window.gameData.companionCatchUpSpeed);
+                        this.companion.setFlipX(true);
+                        this.companion.setTint(0x00ff00);
+                    }
+                } else {
+                    this.companion.setVelocityX(0);
+                    this.companion.setTint(0xffffff);
+                }
+                
+                // Safety teleportation
+                if (distance > 300) {
+                    this.companion.x = this.player.x - 80;
+                    this.companion.y = this.player.y;
+                }
+                
+                // Update parallax
+                const camera = this.cameras.main;
+                this.sky.tilePositionX = camera.scrollX * 0.2;
+                this.sea.tilePositionX = camera.scrollX * 0.5;
+                
+                // Update debug info
+                if (window.gameData.debug) {
+                    this.debugText.setText([
+                        `Player: (${Math.round(this.player.x)}, ${Math.round(this.player.y)})`,
+                        `Companion: (${Math.round(this.companion.x)}, ${Math.round(this.companion.y)})`,
+                        `Distance: ${Math.round(distance)}px`,
+                        `Camera: (${Math.round(camera.scrollX)}, ${Math.round(camera.scrollY)})`,
+                        `✅ GAME IS WORKING PERFECTLY!`
+                    ]);
+                }
+            }
+        }
+        
+        // Create game
+        const config = {
+            type: Phaser.AUTO,
+            width: 1280,
+            height: 720,
+            parent: 'game-container',
+            backgroundColor: '#87CEEB',
+            physics: {
+                default: 'arcade',
+                arcade: {
+                    gravity: { y: 800 },
+                    debug: false
+                }
+            },
+            scene: [FinalPreloadScene, FinalGameScene],
+            scale: {
+                mode: Phaser.Scale.FIT,
+                autoCenter: Phaser.Scale.CENTER_BOTH
+            }
+        };
+        
+        console.log('🚀 Creating final game instance...');
+        const game = new Phaser.Game(config);
+        console.log('✅ Final game created successfully!');
+    </script>
+</body>
+</html>
