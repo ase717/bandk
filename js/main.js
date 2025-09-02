@@ -52,7 +52,7 @@ class Game {
             // Player progress
             currentSegment: 1,
             playerPosition: { x: 100, y: GROUND_Y - GROUND_OFFSET }, 
-            companionPosition: { x: 50, y: GROUND_Y },
+            companionPosition: { x: 50, y: GROUND_Y - GROUND_OFFSET },
 
             // Collectibles and inventory
             collectedItems: [],

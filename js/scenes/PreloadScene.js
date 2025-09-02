@@ -30,30 +30,29 @@ class PreloadScene extends Phaser.Scene {
         console.log('Loading character sprite sheet..')
         // Male character (base + clothes all as sprite sheets) - FIXED: Using 64x64 frames
         this.load.spritesheet('male_skin', 'assets/sprites/male_character/Male_Skin.png', {
-            frameWidth: 32,
-            frameHeight: 32,
+            frameWidth: 64,
+            frameHeight: 80,
         });
 
         this.load.spritesheet('male_hair', 'assets/sprites/male_character/Male_Hair.png', {
-            frameWidth: 32,
-            frameHeight: 32,
+            frameWidth: 64,
+            frameHeight: 80,
         });
 
         this.load.spritesheet('male_shirt', 'assets/sprites/male_character/Male_Shirt.png', {
-            frameWidth: 32,
-            frameHeight: 32,
+            frameWidth: 64,
+            frameHeight: 80,
         });
 
         this.load.spritesheet('male_pants', 'assets/sprites/male_character/Male_Pants.png', {
-            frameWidth: 32,
-            frameHeight: 32,
+            frameWidth: 64,
+            frameHeight: 80,
         });
 
         this.load.spritesheet('male_boots', 'assets/sprites/male_character/Male_Boots.png', {
-            frameWidth: 32,
-            frameHeight: 32,
+            frameWidth: 64,
+            frameHeight: 80,
         });
-
 
         // Load companion dog asset
         console.log('🎨 Loading companion dog asset...');
@@ -66,7 +65,7 @@ class PreloadScene extends Phaser.Scene {
         this.load.image('wine_red', 'assets/sprites/collectibles/wine_red.png');
 
         // Load your existing background assets
-        console.log('🎨 Loading sea and forest theme backgrounds from assets folder...');
+        console.log('🎨 Loading sea, forest and cottonfield theme backgrounds from assets folder...');
 
         // Load Sea Theme Assets (4 layers: sky, far, mid, near)
         this.load.image('sea_sky', 'assets/backgrounds/sea/sea1.png');
@@ -80,6 +79,33 @@ class PreloadScene extends Phaser.Scene {
         this.load.image('forest_mid', 'assets/backgrounds/forest/forest3.png');
         this.load.image('forest_near', 'assets/backgrounds/forest/forest4.png');
 
+        // Load Cottonfield Theme Assets (4 layers: sky, far, mid, near)
+        this.load.image('cottonfield_sky', 'assets/backgrounds/cotton_field/cottonfield1.png');
+        this.load.image('cottonfield_far', 'assets/backgrounds/cotton_field/cottonfield2.png');
+        this.load.image('cottonfield_mid', 'assets/backgrounds/cotton_field/cottonfield3.png');
+        this.load.image('cottonfield_near', 'assets/backgrounds/cotton_field/cottonfield4.png');
+
+        // Load Turkey Assets
+        this.load.spritesheet('turkey', 'assets/sprites/animals/turkey_anim.png', {
+            frameWidth: 32,
+            frameHeight: 32,
+        });
+        this.load.spritesheet('sheep', 'assets/sprites/animals/sheep_anim.png', {
+            frameWidth: 32,
+            frameHeight: 32,
+        });
+
+        this.load.spritesheet('companion_dog_idle', 'assets/sprites/kopus/companion_dog_idle.png', {
+            frameWidth: 32,
+            frameHeight: 32,
+        });
+
+        this.load.spritesheet('companion_dog_walk', 'assets/sprites/kopus/companion_dog_walk.png', {
+            frameWidth: 32,
+            frameHeight: 32,
+        });
+
+
         // Set up loading progress
         this.load.on('progress', (percentage) => {
             this.updateProgress(Math.floor(percentage * 20), 'Loading background assets...');
@@ -91,7 +117,6 @@ class PreloadScene extends Phaser.Scene {
     create() {
         console.log('🎨 Creating player texture first...');
         this.createPlayerTexture();
-        this.createCompanionTexture();
         this.createAssetsWithProgress();
     }
 
@@ -125,7 +150,7 @@ class PreloadScene extends Phaser.Scene {
         console.log('🎨 Starting game with modular visual assets...');
 
         // Verify critical textures exist before starting game
-        const criticalTextures = ['player_male', 'kopus'];
+        const criticalTextures = ['player_male', 'companion_dog'];
         const missingTextures = criticalTextures.filter(texture => !this.textures.exists(texture));
 
         if (missingTextures.length > 0) {
@@ -133,7 +158,7 @@ class PreloadScene extends Phaser.Scene {
             // Create emergency fallbacks for missing textures
             missingTextures.forEach(texture => {
                 if (texture === 'player_male') {
-                    this.createBrightFallback();
+                    this.createReliableFallback();
                 }
             });
         }
@@ -182,23 +207,30 @@ class PreloadScene extends Phaser.Scene {
             this.createLayeredFrame('player_idle_1', requiredLayers, 0);
             this.createLayeredFrame('player_idle_2', requiredLayers, 1);
             this.createLayeredFrame('player_idle_3', requiredLayers, 2);
+            this.createLayeredFrame('player_idle_4', requiredLayers, 3);
+            this.createLayeredFrame('player_idle_5', requiredLayers, 4);
             
             // WALKING FRAMES (Row 2: frames 5-12, use key walking frames)
-            this.createLayeredFrame('player_walk_1', requiredLayers, 5);
-            this.createLayeredFrame('player_walk_2', requiredLayers, 6);
-            this.createLayeredFrame('player_walk_3', requiredLayers, 7);
-            this.createLayeredFrame('player_walk_4', requiredLayers, 8);
-            this.createLayeredFrame('player_walk_5', requiredLayers, 9);
-            this.createLayeredFrame('player_walk_6', requiredLayers, 10);
-            this.createLayeredFrame('player_walk_7', requiredLayers, 11);
-            this.createLayeredFrame('player_walk_8', requiredLayers, 12);
+            this.createLayeredFrame('player_walk_1', requiredLayers, 8);
+            this.createLayeredFrame('player_walk_2', requiredLayers, 9);
+            this.createLayeredFrame('player_walk_3', requiredLayers, 10);
+            this.createLayeredFrame('player_walk_4', requiredLayers, 11);
+            this.createLayeredFrame('player_walk_5', requiredLayers, 12);
+            this.createLayeredFrame('player_walk_6', requiredLayers, 13);
+            this.createLayeredFrame('player_walk_7', requiredLayers, 14);
+            this.createLayeredFrame('player_walk_8', requiredLayers, 15);
             
             
             // JUMPING FRAMES (Row 4: frames 21-24)
-            this.createLayeredFrame('player_jump_1', requiredLayers, 21); // Jump start
-            this.createLayeredFrame('player_jump_2', requiredLayers, 22); // Jump mid
-            this.createLayeredFrame('player_jump_3', requiredLayers, 23); // Jump peak
-            this.createLayeredFrame('player_jump_4', requiredLayers, 24); // Jump land
+            this.createLayeredFrame('player_jump_1', requiredLayers, 24); // Jump start
+            this.createLayeredFrame('player_jump_2', requiredLayers, 25); // Jump mid
+            this.createLayeredFrame('player_jump_3', requiredLayers, 26); // Jump 
+            this.createLayeredFrame('player_jump_4', requiredLayers, 27); // Jump peak
+
+            // LANDING FRAMES (Row 5: frames 25-26)
+            this.createLayeredFrame('player_land_1', requiredLayers, 32); // Landing frame
+            this.createLayeredFrame('player_land_2', requiredLayers, 33); // Return to idle
+
             
             // Main player texture (idle frame 0)
             this.createLayeredFrame('player_male', requiredLayers, 0);
@@ -211,6 +243,7 @@ class PreloadScene extends Phaser.Scene {
         }
     }
 
+
     createLayeredFrame(textureKey, layers, frameIndex) {
         // Check if texture already exists
         if (this.textures.exists(textureKey)) {
@@ -218,8 +251,8 @@ class PreloadScene extends Phaser.Scene {
             return true;
         }
 
-        const width = 32;
-        const height = 32;
+        const width = 64;
+        const height = 80;
 
         try {
             // Create render texture
@@ -227,29 +260,27 @@ class PreloadScene extends Phaser.Scene {
             renderTexture.clear();
             renderTexture.setPosition(-500, -500); // Move far offscreen
 
-            // CRITICAL FIX: Ensure all layered sprites are positioned identically
-            // This prevents frame jumping by maintaining consistent positioning
-            
             const tempSprites = [];
             
             // Create all layer sprites first
             layers.forEach(layerKey => {
                 if (this.textures.exists(layerKey)) {
                     const sprite = this.add.image(0, 0, layerKey, frameIndex);
-                    // CRITICAL: Set the same origin that the player sprite will use
-                    sprite.setOrigin(0.5, 1);
-                    // Position sprite so its bottom-center is at (32, 64)
-                    sprite.setPosition(width / 2, height);
+                    // CRITICAL FIX: Set origin to (0, 0) to ensure consistent positioning
+                    sprite.setOrigin(0, 0);
+                    // Position all sprites at exactly (0, 0) - no offset variations
+                    sprite.setPosition(0, 0);
                     tempSprites.push(sprite);
                 } else {
                     console.warn(`Layer ${layerKey} not found for frame ${frameIndex}`);
                 }
             });
 
-            // Draw each sprite to the render texture at the exact same position
+            // CRITICAL FIX: Draw sprites at (0, 0) with no position variations
             tempSprites.forEach(sprite => {
-                // Draw sprite maintaining its positioning relative to (0,0) of the render texture
-                renderTexture.draw(sprite, sprite.x, sprite.y);
+                // Draw each sprite at exactly the same position (0, 0) in the render texture
+                // This ensures all frames have identical positioning
+                renderTexture.draw(sprite, 0, 0);
             });
 
             // Save the texture
@@ -260,7 +291,7 @@ class PreloadScene extends Phaser.Scene {
             renderTexture.destroy();
 
             if (this.textures.exists(textureKey)) {
-                console.log(`✅ Created layered texture: ${textureKey} from frame ${frameIndex} (origin-matched positioning)`);
+                console.log(`✅ Created layered texture: ${textureKey} from frame ${frameIndex} (consistent positioning)`);
                 return true;
             } else {
                 console.error(`❌ Failed to create texture: ${textureKey}`);
@@ -273,7 +304,7 @@ class PreloadScene extends Phaser.Scene {
     }
 
     createReliableFallback() {
-        console.log('🔧 Creating reliable fallback texture for 64x64...');
+        console.log('🔧 Creating reliable fallback texture for 64x80...');
         
         // FIXED: Check if texture already exists
         if (this.textures.exists('player_male')) {
@@ -283,12 +314,12 @@ class PreloadScene extends Phaser.Scene {
         
         const graphics = this.add.graphics();
         
-        // Create a complete, visible 64x64 character (scaled up from 32x32)
+        // Create a complete, visible 64x80 character
         // Background (for visibility testing)
         graphics.fillStyle(0x000000, 0.1);
-        graphics.fillRect(0, 0, 64, 64);
+        graphics.fillRect(0, 0, 64, 80);
         
-        // Head (tan skin) - scaled for 64x64
+        // Head (tan skin) - properly sized for 64x80
         graphics.fillStyle(0xDEB887);
         graphics.fillRect(12, 4, 40, 28);
         
@@ -296,32 +327,32 @@ class PreloadScene extends Phaser.Scene {
         graphics.fillStyle(0x8B4513);
         graphics.fillRect(8, 0, 48, 16);
         
-        // Eyes (black) - larger for 64x64
+        // Eyes (black)
         graphics.fillStyle(0x000000);
-        graphics.fillRect(16, 12, 6, 6);
-        graphics.fillRect(42, 12, 6, 6);
+        graphics.fillRect(20, 12, 4, 4);
+        graphics.fillRect(36, 12, 4, 4);
         
         // Nose
         graphics.fillStyle(0xCD853F);
         graphics.fillRect(30, 20, 4, 4);
         
-        // Shirt (blue) - full torso scaled for 64x64
+        // Shirt (blue) - full torso
         graphics.fillStyle(0x4682B4);
-        graphics.fillRect(8, 32, 48, 20);
+        graphics.fillRect(8, 32, 48, 28);
         
-        // Arms - scaled for 64x64
+        // Arms
         graphics.fillStyle(0xDEB887);
-        graphics.fillRect(0, 36, 8, 16);  // Left arm
-        graphics.fillRect(56, 36, 8, 16); // Right arm
+        graphics.fillRect(0, 36, 8, 24);  // Left arm
+        graphics.fillRect(56, 36, 8, 24); // Right arm
         
-        // Pants (dark blue) - scaled for 64x64
+        // Pants (dark blue)
         graphics.fillStyle(0x1E3A8A);
-        graphics.fillRect(12, 52, 40, 12);
+        graphics.fillRect(12, 60, 40, 20);
         
-        graphics.generateTexture('player_male', 64, 64);
+        graphics.generateTexture('player_male', 64, 80);
         graphics.destroy();
         
-        console.log('✅ Reliable 64x64 fallback created - should be VERY visible');
+        console.log('✅ Reliable 64x80 fallback created - should be VERY visible');
     }
 
     createSimpleFallback(key) {
@@ -335,38 +366,38 @@ class PreloadScene extends Phaser.Scene {
         
         // Background for visibility
         graphics.fillStyle(0x000000, 0.1);
-        graphics.fillRect(0, 0, 32, 32);
+        graphics.fillRect(0, 0, 64, 80);
         
-        // Head - scaled for 64x64
+        // Head - scaled for 64x80
         graphics.fillStyle(0xDEB887);
-        graphics.fillRect(12, 4, 40, 28);
+        graphics.fillRect(12, 4, 80, 56);
         
         // Hair
         graphics.fillStyle(0x8B4513);
-        graphics.fillRect(8, 0, 48, 16);
+        graphics.fillRect(8, 0, 96, 32);
         
         // Eyes
         graphics.fillStyle(0x000000);
-        graphics.fillRect(16, 12, 6, 6);
-        graphics.fillRect(42, 12, 6, 6);
+        graphics.fillRect(32, 24, 12, 12);
+        graphics.fillRect(84, 24, 12, 12);
         
         // Shirt
         graphics.fillStyle(0x4682B4);
-        graphics.fillRect(8, 32, 48, 20);
+        graphics.fillRect(8, 32, 96, 40);
         
-        // Arms
+        // Arms - scaled for 64x80
         graphics.fillStyle(0xDEB887);
-        graphics.fillRect(0, 36, 8, 16);
-        graphics.fillRect(56, 36, 8, 16);
+        graphics.fillRect(0, 36, 16, 32);
+        graphics.fillRect(112, 36, 16, 32);
         
-        // Pants
+        // Pants - scaled for 64x80
         graphics.fillStyle(0x1E3A8A);
-        graphics.fillRect(12, 52, 40, 12);
+        graphics.fillRect(12, 52, 80, 24);
         
-        graphics.generateTexture(key, 32, 32);
+        graphics.generateTexture(key, 64, 80);
         graphics.destroy();
         
-        console.log(`✅ Created 64x64 fallback for ${key}`);
+        console.log(`✅ Created 64x80 fallback for ${key}`);
     }
 
     createBrightFallback() {
@@ -374,48 +405,4 @@ class PreloadScene extends Phaser.Scene {
         this.createReliableFallback();
     }
 
-    createCompanionTexture() {
-        console.log('🎨 Creating companion dog (Köpüş) texture...');
-        const graphics = this.add.graphics();
-
-        // FIXED: Create dog at 64x64 to match player character size and proportions
-        // Dog body (white/light gray) - properly sized for 64x64
-        graphics.fillStyle(0xF5F5F5); // Light gray/white
-        graphics.fillRect(20, 36, 24, 16); // Main body
-
-        // Dog head
-        graphics.fillStyle(0xE0E0E0); // Slightly darker gray
-        graphics.fillRect(16, 28, 12, 12); // Head
-
-        // Dog ears
-        graphics.fillStyle(0xD0D0D0); // Darker gray for ears
-        graphics.fillRect(14, 24, 4, 6); // Left ear
-        graphics.fillRect(26, 24, 4, 6); // Right ear
-
-        // Dog eyes
-        graphics.fillStyle(0x000000); // Black eyes
-        graphics.fillRect(18, 32, 2, 2); // Left eye
-        graphics.fillRect(22, 32, 2, 2); // Right eye
-
-        // Dog nose
-        graphics.fillStyle(0x000000); // Black nose
-        graphics.fillRect(20, 36, 2, 1); // Nose
-
-        // Dog tail
-        graphics.fillStyle(0xF5F5F5); // Same as body
-        graphics.fillRect(42, 32, 6, 3); // Tail
-
-        // Dog legs
-        graphics.fillStyle(0xE0E0E0); // Leg color
-        graphics.fillRect(22, 52, 3, 8); // Front left leg
-        graphics.fillRect(27, 52, 3, 8); // Front right leg
-        graphics.fillRect(34, 52, 3, 8); // Back left leg
-        graphics.fillRect(39, 52, 3, 8); // Back right leg
-
-        // FIXED: Generate as 32x32 to match player
-        graphics.generateTexture('kopus', 32, 32);
-        graphics.destroy();
-
-        console.log('🎨 Companion dog texture created (32x32) to match player scale');
-    }
 }

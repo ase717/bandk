@@ -43,11 +43,8 @@ class GameScene extends Phaser.Scene {
         // Create obstacles system
         this.obstacles = new Obstacles(this);
         this.obstacles.createSegment1Obstacles();
+        this.physics.add.collider(this.obstacles, this.ground);
         
-        // Set up obstacle collisions
-        this.physics.add.collider(this.player, this.obstacles, (player, obstacle) => {
-            this.obstacles.handlePlayerCollision(player, obstacle);
-        });
         
         // Initialize other systems
         this.checkpoints = this.add.group();
@@ -55,7 +52,6 @@ class GameScene extends Phaser.Scene {
         // Listen for game events
         this.events.on('item-collected', this.handleItemCollected, this);
         this.events.on('npc-interaction', this.handleNPCInteraction, this);
-        this.events.on('chicken-disturbed', this.handleChickenDisturbed, this);
         
         // Add NPC collision with ground
         this.physics.add.collider(this.npcs, this.ground);
@@ -85,12 +81,6 @@ class GameScene extends Phaser.Scene {
         // window.gameData.npcInteractions = (window.gameData.npcInteractions || 0) + 1;
     }
     
-    handleChickenDisturbed(chicken) {
-        console.log('Chicken was disturbed and fled!');
-        
-        // Optional: Add sound effect or visual feedback
-        // Could trigger companion barking or other reactions
-    }
 
     setupWorld() {
         // Set world bounds for Segment 1 (6000px for ~5 minutes gameplay)
@@ -103,8 +93,7 @@ class GameScene extends Phaser.Scene {
         // Define environment zones for 5-minute gameplay
         this.environmentZones = {
             kusadasi: { start: 0, end: 2000, name: 'Kuşadası Coast' },
-            transition: { start: 2000, end: 4000, name: 'Olive Groves' },
-            soke: { start: 4000, end: 6000, name: 'Söke Cotton Fields' }
+            soke: { start: 2000, end: 4000, name: 'Söke Cotton Fields' }
         };
 
         console.log(`World bounds set: ${this.worldWidth}x${this.worldHeight} (5-minute gameplay design)`);
@@ -133,7 +122,7 @@ class GameScene extends Phaser.Scene {
         for (let x = 0; x < this.worldWidth; x += tileWidth) {
             const groundPhysics = this.add.rectangle(
                 x + tileWidth / 2, 
-                GROUND_Y, // Position rectangle so its TOP edge is at GROUND_Y
+                GROUND_Y, // Position rectangle so its BOTTOM edge is at GROUND_Y
                 tileWidth, 
                 GROUND_HEIGHT, 
                 0x000000, 
@@ -141,7 +130,15 @@ class GameScene extends Phaser.Scene {
             );
             // Set origin to (0.5, 0) so the top of the rectangle is at GROUND_Y
             groundPhysics.setOrigin(0.5, 0);
+
+             // Physics body ekle
             this.physics.add.existing(groundPhysics, true);
+        
+            // body hazır mı diye kontrol et
+            if (groundPhysics.body) {
+            groundPhysics.body.setSize(tileWidth, GROUND_HEIGHT);
+            groundPhysics.body.setOffset(0, 0);
+            }
             this.ground.add(groundPhysics);
         }
 
@@ -186,7 +183,9 @@ class GameScene extends Phaser.Scene {
         }
         
         const startX = window.gameData.playerPosition.x;
-        const startY = window.gameData.playerPosition.y;
+        const startY = window.gameData.GROUND_Y; // For origin (0.5, 1), Y should be ground level
+
+        console.log('Player start position:', window.gameData.playerPosition);
 
         try {
             // FIXED: Ensure Player class is available
@@ -203,7 +202,7 @@ class GameScene extends Phaser.Scene {
             window.testPlayerVisibility = () => {
                 console.log('🧪 TESTING PLAYER VISIBILITY...');
                 this.player.setPosition(400, 300); // Center of screen
-                this.player.setScale(2.0); // FIXED: Use 2.0 scale for testing visibility with 64x64 sprites
+                this.player.setScale(2.0); 
                 this.player.setVisible(true);
                 this.player.setAlpha(1);
                 this.player.setDepth(999);
@@ -211,16 +210,28 @@ class GameScene extends Phaser.Scene {
                 console.log('🧪 Player should now be a big red sprite in center of screen');
             };
             
-            // Add validation method
-            window.validatePlayerFixes = () => {
-                return this.player.validateFixes();
+            // Add collision and animation testing methods
+            window.testAllFixes = () => {
+                return this.player.testAllFixes();
+            };
+            
+            window.fixAnimationFlickering = () => {
+                this.player.fixAnimationFlickering();
+            };
+            
+            window.showCollisionBox = () => {
+                this.player.showCollisionBox();
+            };
+            
+            window.debugPlayerPosition = () => {
+                this.player.debugPositioning();
             };
             
             // Add quick fix method
             window.fixPlayerNow = () => {
                 console.log('🔧 APPLYING EMERGENCY FIXES...');
                 this.player.setY(window.gameData.GROUND_Y);
-                this.player.setScale(1.0); // FIXED: Use 1.0 scale for 64x64 sprites
+                this.player.setScale(2.0);
                 this.player.setVisible(true);
                 this.player.setAlpha(1);
                 this.player.checkGrounding();
@@ -257,18 +268,18 @@ class GameScene extends Phaser.Scene {
         console.log('🚨 Creating emergency player texture in GameScene...');
         const graphics = this.add.graphics();
         
-        // Draw a bright, highly visible 64x64 character
+        // Draw a bright, highly visible 32x40 character
         graphics.fillStyle(0xFF0000); // Bright red head
-        graphics.fillRect(16, 4, 32, 24); // Head (scaled for 64x64)
+        graphics.fillRect(16, 4, 32, 24); // Head (scaled for 32x40)
         graphics.fillStyle(0x00FF00); // Bright green shirt
-        graphics.fillRect(12, 28, 40, 24); // Shirt (scaled for 64x64)
+        graphics.fillRect(12, 28, 40, 24); // Shirt (scaled for 32x40)
         graphics.fillStyle(0x0000FF); // Bright blue pants
-        graphics.fillRect(16, 52, 32, 12); // Pants (scaled for 64x64)
+        graphics.fillRect(16, 52, 32, 12); // Pants (scaled for 32x40)
         
-        graphics.generateTexture('player_male', 64, 64);
+        graphics.generateTexture('player_male', 32, 40);
         graphics.destroy();
         
-        console.log('🚨 Emergency player texture created in GameScene (64x64)');
+        console.log('🚨 Emergency player texture created in GameScene (32x40)');
     }
     
     createPlayerAnimations() {
@@ -292,8 +303,7 @@ class GameScene extends Phaser.Scene {
             frameRate: 8,
             repeat: -1
         });
-        
-        console.log('✅ Player animations created');
+
     }
 
     setupCameraEffects() {
@@ -498,7 +508,7 @@ class GameScene extends Phaser.Scene {
             this.ui.debugText.setText([
                 `Player: ${playerDebug.position} [${playerDebug.state}] | Ground: ${this.player.isOnGround()}`,
                 `Companion: ${companionDebug.position} [${companionAI.current}] | Dist: ${companionAI.distance}px`,
-                `Items: ${collectibleStats.collected}/${collectibleStats.total} | Obstacles: ${obstacleStats.total} (🐑${obstacleStats.sheep} 🐔${obstacleStats.chickens} 🚜${obstacleStats.tractors})`,
+                `Items: ${collectibleStats.collected}/${collectibleStats.total} | Obstacles: ${obstacleStats.total} (🐑${obstacleStats.sheep} 🦃${obstacleStats.turkeys} 🚜${obstacleStats.tractors})`,
                 `Zone: ${currentZone} | Camera: (${Math.round(this.cameras.main.scrollX)}, ${Math.round(this.cameras.main.scrollY)})`
             ]);
         }

@@ -9,12 +9,8 @@ class AssetCreator {
     async createAllAssets(progressCallback) {
         console.log('🎨 AssetCreator: Starting Prince of Persia style asset creation...');
 
-        // Character assets
-        await this.createKopusCharacter(progressCallback);
-
         // Environment assets (backgrounds loaded from files in PreloadScene)
-        await this.createBackgrounds(progressCallback);
-        await this.createSignboards(progressCallback);
+        await this.createSignboard(progressCallback);
         await this.createProps(progressCallback);
 
         // NPC assets
@@ -67,11 +63,6 @@ class AssetCreator {
         fenceGraphics.destroy();
 
     }
-
-    createBackgrounds(progressCallback) {
-        // Backgroundlar zaten PreloadScene'de yüklenmiş
-        console.log('🎨 Background assets are already loaded in PreloadScene');
-    }    
 
     /**
      * Create collectible items (16x16)
@@ -174,47 +165,8 @@ class AssetCreator {
         if (progressCallback) progressCallback(95, 'Creating farm obstacles...');
         await this.delay(300);
 
-        // Sheep sprite (32x24)
-        const sheepGraphics = this.scene.add.graphics();
-        sheepGraphics.fillStyle(0xF5F5F5); // White wool
-        sheepGraphics.fillRect(4, 8, 24, 12); // Body
-        sheepGraphics.fillRect(2, 6, 8, 8); // Head
-        sheepGraphics.fillStyle(0x000000); // Black face
-        sheepGraphics.fillRect(2, 8, 6, 6);
-        sheepGraphics.fillStyle(0xFFFFFF); // White around eyes
-        sheepGraphics.fillRect(3, 9, 1, 1); // Left eye
-        sheepGraphics.fillRect(5, 9, 1, 1); // Right eye
-        // Legs
-        sheepGraphics.fillStyle(0x000000);
-        sheepGraphics.fillRect(6, 18, 2, 6); // Front left
-        sheepGraphics.fillRect(10, 18, 2, 6); // Front right
-        sheepGraphics.fillRect(18, 18, 2, 6); // Back left
-        sheepGraphics.fillRect(22, 18, 2, 6); // Back right
-        sheepGraphics.generateTexture('sheep', 32, 24);
-        sheepGraphics.destroy();
 
-        // Chicken sprite (16x20)
-        const chickenGraphics = this.scene.add.graphics();
-        chickenGraphics.fillStyle(0xFFFFFF); // White feathers
-        chickenGraphics.fillRect(2, 8, 12, 8); // Body
-        chickenGraphics.fillRect(1, 4, 8, 6); // Head
-        chickenGraphics.fillStyle(0xFF0000); // Red comb
-        chickenGraphics.fillRect(3, 2, 4, 3);
-        chickenGraphics.fillStyle(0x000000); // Black eye
-        chickenGraphics.fillRect(4, 6, 1, 1);
-        chickenGraphics.fillStyle(0xFFA500); // Orange beak
-        chickenGraphics.fillRect(1, 7, 2, 1);
-        // Legs
-        chickenGraphics.fillStyle(0xFFA500);
-        chickenGraphics.fillRect(4, 16, 1, 4); // Left leg
-        chickenGraphics.fillRect(7, 16, 1, 4); // Right leg
-        // Tail feathers
-        chickenGraphics.fillStyle(0xFFFFFF);
-        chickenGraphics.fillRect(12, 6, 3, 6);
-        chickenGraphics.generateTexture('chicken', 16, 20);
-        chickenGraphics.destroy();
-
-        console.log('🎨 Farm obstacle sprites created (sheep, chicken, tractor)');
+        console.log('🎨 Farm obstacle sprites created (tractor)');
     }
 
     /**
@@ -367,79 +319,7 @@ class AssetCreator {
     async createObstacles(progressCallback) {
         if (progressCallback) progressCallback(95, 'Creating farm obstacles...');
         await this.delay(300);
-
-        // Sheep (32x32) - White fluffy sheep
-        const sheepGraphics = this.scene.add.graphics();
-
-        // Sheep body (fluffy white)
-        sheepGraphics.fillStyle(0xF5F5F5); // Off-white wool
-        sheepGraphics.fillEllipse(16, 20, 24, 16); // Main body
-        sheepGraphics.fillEllipse(12, 18, 8, 6); // Fluffy left side
-        sheepGraphics.fillEllipse(20, 18, 8, 6); // Fluffy right side
-        sheepGraphics.fillEllipse(16, 14, 12, 8); // Fluffy top
-
-        // Sheep head (black face)
-        sheepGraphics.fillStyle(0x2C2C2C); // Dark grey/black face
-        sheepGraphics.fillEllipse(8, 18, 8, 10); // Head
-
-        // Eyes
-        sheepGraphics.fillStyle(0xFFFFFF);
-        sheepGraphics.fillRect(5, 16, 2, 2); // Left eye
-        sheepGraphics.fillRect(7, 16, 2, 2); // Right eye
-        sheepGraphics.fillStyle(0x000000);
-        sheepGraphics.fillRect(6, 17, 1, 1); // Left pupil
-        sheepGraphics.fillRect(8, 17, 1, 1); // Right pupil
-
-        // Legs (black)
-        sheepGraphics.fillStyle(0x2C2C2C);
-        sheepGraphics.fillRect(10, 26, 3, 6); // Front left leg
-        sheepGraphics.fillRect(14, 26, 3, 6); // Front right leg
-        sheepGraphics.fillRect(18, 26, 3, 6); // Back left leg
-        sheepGraphics.fillRect(22, 26, 3, 6); // Back right leg
-
-        sheepGraphics.generateTexture('sheep', 32, 32);
-        sheepGraphics.destroy();
-
-        // Chicken (20x24) - Brown/red chicken
-        const chickenGraphics = this.scene.add.graphics();
-
-        // Chicken body
-        chickenGraphics.fillStyle(0x8D6E63); // Brown body
-        chickenGraphics.fillEllipse(10, 16, 12, 10); // Main body
-
-        // Chicken head
-        chickenGraphics.fillStyle(0xA0522D); // Slightly lighter brown head
-        chickenGraphics.fillEllipse(6, 12, 8, 8); // Head
-
-        // Beak
-        chickenGraphics.fillStyle(0xFFA500); // Orange beak
-        chickenGraphics.fillTriangle(2, 12, 2, 14, 0, 13); // Beak
-
-        // Eye
-        chickenGraphics.fillStyle(0x000000);
-        chickenGraphics.fillRect(5, 11, 1, 1); // Eye
-
-        // Comb (red)
-        chickenGraphics.fillStyle(0xDC143C); // Red comb
-        chickenGraphics.fillRect(6, 8, 2, 4); // Comb
-        sheepGraphics.fillRect(8, 9, 1, 3); // Comb detail
-
-        // Wings
-        chickenGraphics.fillStyle(0x654321); // Darker brown wing
-        chickenGraphics.fillEllipse(12, 14, 6, 4); // Wing
-
-        // Tail feathers
-        chickenGraphics.fillStyle(0x2F4F2F); // Dark green tail
-        chickenGraphics.fillRect(15, 12, 4, 2); // Tail
-        chickenGraphics.fillRect(16, 10, 2, 2); // Tail feather
-
-        // Legs
-        chickenGraphics.fillStyle(0xFFA500); // Orange legs
-        chickenGraphics.fillRect(8, 20, 2, 4); // Left leg
-        chickenGraphics.fillRect(11, 20, 2, 4); // Right leg
-
-        chickenGraphics.generateTexture('chicken', 20, 24);
-        chickenGraphics.destroy();
+    
 
         // Tractor (64x48) - Green farm tractor
         const tractorGraphics = this.scene.add.graphics();
@@ -478,19 +358,13 @@ class AssetCreator {
         tractorGraphics.generateTexture('tractor', 64, 48);
         tractorGraphics.destroy();
 
-        console.log('🎨 Farm obstacles created (sheep, chicken, tractor)');
-    }
-
-    createKopusCharacter(progressCallback) {
-        this.scene.kopus = new CompanionDog(this.scene, 100, 300); // pozisyonu ayarlayabilirsin
-        if (progressCallback) progressCallback(1); // ilerleme callback
-        return Promise.resolve();
+        console.log('🎨 Farm obstacles created (tractor)');
     }
 
     /**
      * Create a signboard with text
      */
-    createSignboards(text, textureKey) {
+    createSignboard(text, textureKey) {
         const graphics = this.scene.add.graphics();
 
         // Wooden post

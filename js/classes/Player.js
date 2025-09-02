@@ -29,7 +29,7 @@ class Player extends Phaser.Physics.Arcade.Sprite {
             right: false,
             up: false,
             down: false,
-        };        
+        };
 
         // Fixed: Align to ground IMMEDIATELY after physics setup
         this.alignToGround();
@@ -66,23 +66,17 @@ class Player extends Phaser.Physics.Arcade.Sprite {
 
     // FIXED: Make this a static method so it can be called before super()
     static createEmergencyFallback(scene) {
-        console.log('🚨 Creating emergency fallback texture for player...');
         const graphics = scene.add.graphics();
-
-        // Draw a bright, highly visible 32x32 character
-        graphics.fillStyle(0xFF0000); // Bright red head
-        graphics.fillRect(16, 4, 32, 24); // Head (scaled for 32x32)
-
-        graphics.fillStyle(0x00FF00); // Bright green body
-        graphics.fillRect(12, 28, 40, 24); // Body (scaled for 32x32)
-
-        graphics.fillStyle(0x0000FF); // Bright blue legs  
-        graphics.fillRect(16, 52, 32, 12); // Legs (scaled for 32x32)
-
+        graphics.fillStyle(0xFF0000); // Head
+        graphics.fillRect(8, 2, 16, 12);
+        graphics.fillStyle(0x00FF00); // Body
+        graphics.fillRect(6, 14, 20, 12);
+        graphics.fillStyle(0x0000FF); // Legs
+        graphics.fillRect(8, 26, 16, 6);
         graphics.generateTexture('player_male', 32, 32);
         graphics.destroy();
 
-        console.log('🚨 Emergency fallback texture created (32x32) - should be VERY visible!');
+        console.log('🚨 Emergency fallback texture created (64x64) - should be VERY visible!');
     }
 
     forceVisibility() {
@@ -91,15 +85,15 @@ class Player extends Phaser.Physics.Arcade.Sprite {
         // Set maximum visibility with consistent scale
         this.setVisible(true);
         this.setAlpha(1.0);
-        this.setScale(1.0); // 
+        this.setScale(2.0); // 
         this.setDepth(999); // Put it on top of everything
         this.setTint(0xFFFFFF); // Remove any tinting
 
         // Position it in a very visible location
-        this.setPosition(400, 300); // Center of screen
+        this.setPosition(200, 150); // Center of screen
 
         // Add a bright background for testing
-        const testBg = this.scene.add.rectangle(640, 360, 100, 100, 0xFF0000, 0.5);
+        const testBg = this.scene.add.rectangle(640, 360, 200, 200, 0xFF0000, 0.5);
         testBg.setDepth(998);
 
         console.log('🔥 Player should now be EXTREMELY visible at center of screen!');
@@ -109,7 +103,7 @@ class Player extends Phaser.Physics.Arcade.Sprite {
             testBg.destroy();
             // Return to normal position
             this.setPosition(window.gameData.playerPosition.x, window.gameData.playerPosition.y);
-            this.setScale(1.0); // FIXED: Maintain 1.0 scale for 64x64 sprites
+            this.setScale(2.0);
             this.setDepth(window.gameData.DEPTHS.CHARACTERS);
         });
     }
@@ -123,10 +117,11 @@ class Player extends Phaser.Physics.Arcade.Sprite {
         console.log(`- Sprite position: ${this.x}, ${this.y}`);
         console.log(`- Sprite depth: ${this.depth}`);
 
+
         // Force visibility and proper positioning
         this.setVisible(true);
         this.setAlpha(1);
-        this.setScale(1.0); // FIXED: Use 1.0 scale for 64x64 sprites
+        this.setScale(2.0);
         this.setDepth(window.gameData.DEPTHS.CHARACTERS);
 
         // Stop any conflicting tweens
@@ -154,49 +149,49 @@ class Player extends Phaser.Physics.Arcade.Sprite {
     }
 
     setupPhysics() {
-        // Physics properties for 64x64 character sprites
+        // Physics properties for 64x80 character sprites with scale 2
         this.setCollideWorldBounds(true);
         this.setBounce(0.1);
-        this.setScale(1.0); //
+        this.setScale(2.0); // Scale 2 for 64x80 sprites to make them bigger
         this.setOrigin(0.5, 1); // Bottom-center anchor for ground alignment
         this.setDepth(window.gameData.DEPTHS.CHARACTERS);
 
-        // FIXED: Improved physics body setup for 64x64 sprite with perfect alignment
-        const spriteWidth = 32;
-        const spriteHeight = 32;
-        
-        // Character collision box - more accurate proportions
-        const bodyWidth = 14;  // Narrower for more precise collision
-        const bodyHeight = 24; // Better match for character height
-        
-        // Set body size first
-        this.body.setSize(bodyWidth, bodyHeight);
-        
-        // CRITICAL FIX: Perfect offset calculation for origin (0.5, 1)
-        // Since layered textures are centered, we need to account for this
-        const offsetX = (spriteWidth - bodyWidth) / 2;  // Center horizontally: (64-20)/2 = 22
-        const offsetY = spriteHeight - bodyHeight;      // Align body bottom to sprite bottom: 64-44 = 20
-        
+        // FIXED: Correct physics body setup for 64x80 sprite with scale 2
+        const spriteWidth = 64;   // Base sprite width
+        const spriteHeight = 80;  // Base sprite height
+
+        // Physics body dimensions (smaller than sprite for better gameplay)
+        const bodyWidth = 32;     // Narrower collision box
+        const bodyHeight = 60;    // Shorter collision box (exclude head area)
+
+        this.body.setSize(bodyWidth * 2, bodyHeight * 2);
+
+        // Calculate offset in unscaled coordinates (Phaser will scale the offset too)
+        const offsetX = (spriteWidth * 2 - bodyWidth * 2) / 2;  // Center horizontally: (64-32)/2 = 16
+        const offsetY = spriteHeight * 2 - bodyHeight * 2;      // Align to bottom: 80-60 = 20
+
         this.body.setOffset(offsetX, offsetY);
 
-        console.log(`✅ PERFECTED Physics setup for 64x64 sprites:`);
-        console.log(`- Sprite: ${spriteWidth}x${spriteHeight} with origin (0.5, 1)`);
-        console.log(`- Body: ${bodyWidth}x${bodyHeight} (precise character proportions)`);
-        console.log(`- Offset: (${offsetX}, ${offsetY})`);
-        console.log(`- Expected perfect collision alignment`);
+        console.log(`✅ FIXED Physics setup for 64x80 sprite with scale 2:`);
+        console.log(`- Base sprite: ${spriteWidth}x${spriteHeight}`);
+        console.log(`- Displayed size: ${spriteWidth * 2}x${spriteHeight * 2}`);
+        console.log(`- Body size: ${bodyWidth}x${bodyHeight}`);
+        console.log(`- Body offset: (${offsetX}, ${offsetY}) - relative to unscaled sprite`);
+        console.log(`- Origin: (0.5, 1) - bottom-center anchor`);
 
         // Movement properties
-        this.movementSpeed = window.gameData.playerSpeed || 150;
-        this.jumpVelocity = window.gameData.jumpVelocity || -250;
+        this.movementSpeed = window.gameData.playerSpeed || 300;
+        this.jumpVelocity = window.gameData.jumpVelocity || -500;
     }
 
     setupAnimations() {
         console.log('🎨 Setting up player animations from sprite sheet...');
 
         // Check if we have layered textures or should use base sprite sheet
-        const hasLayeredTextures = this.scene.textures.exists('player_idle_1') && 
-                                   this.scene.textures.exists('player_walk_1') && 
-                                   this.scene.textures.exists('player_jump_1');
+        const hasLayeredTextures = this.scene.textures.exists('player_idle_1') &&
+            this.scene.textures.exists('player_walk_1') &&
+            this.scene.textures.exists('player_jump_1') &&
+            this.scene.textures.exists('player_land_1');
 
         if (hasLayeredTextures) {
             console.log('✅ Using layered textures for animations');
@@ -223,15 +218,22 @@ class Player extends Phaser.Physics.Arcade.Sprite {
     setupLayeredAnimations() {
         // IDLE ANIMATION - Single frame for stability
         if (!this.scene.anims.exists('player_idle')) {
-            this.scene.anims.create({
-                key: 'player_idle',
-                frames: [
-                    { key: 'player_idle_1' },
-                ],
-                frameRate: 1,
-                repeat: -1
-            });
-            console.log('✅ Stable layered player_idle animation created');
+            // Check if the idle texture exists
+            if (this.scene.textures.exists('player_idle_1')) {
+                this.scene.anims.create({
+                    key: 'player_idle',
+                    frames: [
+                        { key: 'player_idle_1' },
+                    ],
+                    frameRate: 1,
+                    repeat: -1
+                });
+                console.log('✅ Stable layered player_idle animation created');
+            } else {
+                console.warn('⚠️ player_idle_1 texture not found, using fallback');
+                // Use the base texture as fallback
+                this.setTexture('player_male');
+            }
         }
 
         // WALKING ANIMATION - Natural leg movement with all 8 frames
@@ -259,7 +261,10 @@ class Player extends Phaser.Physics.Arcade.Sprite {
             this.scene.anims.create({
                 key: 'player_jump',
                 frames: [
+                    { key: 'player_jump_1' }, // Use mid-jump frame that stays visible
                     { key: 'player_jump_2' }, // Use mid-jump frame that stays visible
+                    { key: 'player_jump_3' }, // Use mid-jump frame that stays visible
+                    { key: 'player_jump_4' }, // Use mid-jump frame that stays visible
                 ],
                 frameRate: 1, // Hold single frame throughout jump
                 repeat: -1 // Keep playing to maintain visibility
@@ -272,10 +277,11 @@ class Player extends Phaser.Physics.Arcade.Sprite {
             this.scene.anims.create({
                 key: 'player_land',
                 frames: [
-                    { key: 'player_jump_4' }, // Landing frame
+                    { key: 'player_land_1' }, // Landing frame
+                    { key: 'player_land_2' }, // Landing frame
                     { key: 'player_idle_1' }, // Return to idle
                 ],
-                frameRate: 10,
+                frameRate: 2,
                 repeat: 0
             });
             console.log('✅ Quick layered player_land animation created');
@@ -284,7 +290,7 @@ class Player extends Phaser.Physics.Arcade.Sprite {
 
     setupSpriteSheetAnimations() {
         const skinKey = 'male_skin'; // Base sprite sheet
-        
+
         if (!this.scene.textures.exists(skinKey)) {
             console.error(`❌ Base sprite sheet ${skinKey} not found!`);
             return;
@@ -305,30 +311,19 @@ class Player extends Phaser.Physics.Arcade.Sprite {
         if (!this.scene.anims.exists('player_walk')) {
             this.scene.anims.create({
                 key: 'player_walk',
-                frames: this.scene.anims.generateFrameNumbers(skinKey, { start: 5, end: 10 }),
+                frames: this.scene.anims.generateFrameNumbers(skinKey, { start: 8, end: 15 }),
                 frameRate: 8,
                 repeat: -1
             });
             console.log('✅ Sprite sheet player_walk animation created');
         }
 
-        // RUNNING ANIMATION - Row 3, frames 13-16
-        if (!this.scene.anims.exists('player_run')) {
-            this.scene.anims.create({
-                key: 'player_run',
-                frames: this.scene.anims.generateFrameNumbers(skinKey, { start: 13, end: 16 }),
-                frameRate: 12,
-                repeat: -1
-            });
-            console.log('✅ Sprite sheet player_run animation created');
-        }
-
         // JUMPING ANIMATION - Row 4, frames 21-23
         if (!this.scene.anims.exists('player_jump')) {
             this.scene.anims.create({
                 key: 'player_jump',
-                frames: this.scene.anims.generateFrameNumbers(skinKey, { start: 21, end: 23 }),
-                frameRate: 8,
+                frames: this.scene.anims.generateFrameNumbers(skinKey, { start: 24, end: 27 }),
+                frameRate: 4,
                 repeat: 0
             });
             console.log('✅ Sprite sheet player_jump animation created');
@@ -338,14 +333,19 @@ class Player extends Phaser.Physics.Arcade.Sprite {
         if (!this.scene.anims.exists('player_land')) {
             this.scene.anims.create({
                 key: 'player_land',
-                frames: [
-                    { key: skinKey, frame: 24 }, // Landing frame
-                    { key: skinKey, frame: 0 },  // Return to idle
-                ],
-                frameRate: 10,
+                frames: this.scene.anims.generateFrameNumbers(skinKey, { start: 32, end: 33 }),
+                frameRate: 4,
                 repeat: 0
             });
             console.log('✅ Sprite sheet player_land animation created');
+        }
+        this.on('animationcomplete', this.onAnimationComplete, this);
+    }
+
+    onAnimationComplete(anim) {
+        if (anim.key === 'player_land') {
+            console.log('player_land animation completed');
+            this.play('player_idle');
         }
     }
 
@@ -358,7 +358,7 @@ class Player extends Phaser.Physics.Arcade.Sprite {
         if (!this.keys) {
             this.keys = this.scene.input.keyboard.addKeys('W,S,A,D');
         }
-        
+
         if (!this.cursors) {
             this.cursors = this.scene.input.keyboard.createCursorKeys();
         }
@@ -371,7 +371,7 @@ class Player extends Phaser.Physics.Arcade.Sprite {
         this.state = {
             current: 'idle', // idle, running, jumping, falling
             previous: 'idle',
-            onGround: false,
+            onGround: true,
             canJump: true,
             interacting: false
         };
@@ -406,16 +406,16 @@ class Player extends Phaser.Physics.Arcade.Sprite {
             this.setVisible(true);
             console.log('🔧 Fixed visibility');
         }
-        
+
         if (this.alpha < 1) {
             this.setAlpha(1);
             console.log('🔧 Fixed alpha');
         }
-        
+
         // FIXED: Don't constantly adjust scale - this was causing flickering
         // Only fix if scale is significantly wrong
         if (Math.abs(this.scaleX - 2.0) > 0.1 || Math.abs(this.scaleY - 2.0) > 0.1) {
-            this.setScale(2.0);
+            this.setScale(1.0);
             console.log('🔧 Fixed scale');
         }
     }
@@ -429,10 +429,10 @@ class Player extends Phaser.Physics.Arcade.Sprite {
         let isMoving = false;
         let directionChanged = false;
 
-        // SIMPLIFIED: Movement handling - no more Shift/running logic
+        // FIXED: Movement handling with proper state updates
         if (this.cursors.left.isDown || (this.keys.A && this.keys.A.isDown)) {
             this.setVelocityX(-this.movementSpeed);
-            
+
             if (this.flipX) {
                 this.setFlipX(false);
                 this.animationState.facingDirection = 'left';
@@ -441,15 +441,16 @@ class Player extends Phaser.Physics.Arcade.Sprite {
             isMoving = true;
         } else if (this.cursors.right.isDown || (this.keys.D && this.keys.D.isDown)) {
             this.setVelocityX(this.movementSpeed);
-            
+
             if (!this.flipX) {
-                this.setFlipX(true);   
+                this.setFlipX(true);
                 this.animationState.facingDirection = 'right';
                 directionChanged = true;
             }
             isMoving = true;
         } else {
             this.setVelocityX(0);
+            isMoving = false;
         }
 
         // Jumping logic
@@ -457,23 +458,28 @@ class Player extends Phaser.Physics.Arcade.Sprite {
             this.setVelocityY(this.jumpVelocity);
             this.animationState.isJumping = true;
             this.state.canJump = false;
+            this.state.onGround = false;
         }
 
         // Reset jump ability when touching ground
         if (this.body.touching.down) {
             this.state.canJump = true;
+            this.state.onGround = true;
             if (this.animationState.isJumping) {
                 this.animationState.isJumping = false;
             }
         }
 
-        // CRITICAL FIX: Update animation state properly
+        // CRITICAL FIX: Update movement state immediately
         const wasMoving = this.animationState.isMoving;
-        
         this.animationState.isMoving = isMoving;
-        this.animationState.isRunning = false; // No running functionality
         this.movement.isMoving = isMoving;
-        this.state.onGround = this.body.touching.down;
+
+        // Debug movement state
+        if (wasMoving !== isMoving) {
+            console.log(`🏃 Movement state changed: ${wasMoving ? 'moving' : 'idle'} → ${isMoving ? 'moving' : 'idle'}`);
+            console.log(`🏃 Velocity: ${this.body.velocity.x}`);
+        }
 
         // Force animation update when movement state changes
         if (wasMoving !== isMoving || directionChanged) {
@@ -485,46 +491,55 @@ class Player extends Phaser.Physics.Arcade.Sprite {
         const state = this.animationState;
         let newAnimation = null;
 
-        // IMPROVED: Clear animation logic for reliable walking and jumping
-        if (state.isJumping || !this.state.onGround) {
-            // Use consistent jump animation throughout
-            newAnimation = 'player_jump';
-        } else if (state.isMoving) {
-            // ALWAYS show walking leg movement when moving
-            newAnimation = 'player_walk';
+        // FIXED: Simplified animation logic
+        if (!this.state.onGround) {
+            // In air
+            if (this.body.velocity.y < 0) {
+                newAnimation = 'player_jump'; // Going up
+            } else {
+                newAnimation = 'player_land'; // Falling down
+            }
+            state.wasInAir = true;
         } else {
-            newAnimation = 'player_idle';
+            // On ground
+            if (state.wasInAir) {
+                // Just landed - play idle briefly
+                newAnimation = 'player_idle';
+                state.wasInAir = false;
+            } else if (state.isMoving && Math.abs(this.body.velocity.x) > 10) {
+                // Moving and actually has velocity
+                newAnimation = 'player_walk';
+            } else {
+                // Standing still
+                newAnimation = 'player_idle';
+            }
         }
 
-        // CRITICAL FIX: Always update animation when state changes
-        if (newAnimation !== state.current) {
+        // Only change animation if it's different
+        if (state.current !== newAnimation) {
             if (this.scene.anims.exists(newAnimation)) {
                 try {
-                    this.play(newAnimation);
+                    this.anims.play(newAnimation, true);
                     state.current = newAnimation;
-                    
-                    console.log(`🎬 Animation: ${newAnimation}`);
+                    console.log(`🎬 Animation: ${newAnimation} (velocity: ${this.body.velocity.x.toFixed(1)})`);
                 } catch (error) {
                     console.error(`Error playing animation ${newAnimation}:`, error);
-                    // IMPROVED: Better fallback to prevent disappearing
+                    // Fallback to texture
                     if (this.scene.textures.exists('player_idle_1')) {
                         this.setTexture('player_idle_1');
-                    } else if (this.scene.textures.exists('male_skin')) {
-                        this.setTexture('male_skin', 0);
                     }
                 }
             } else {
-                console.error(`Animation ${newAnimation} does not exist!`);
-                // IMPROVED: Better fallback to prevent disappearing
-                if (this.scene.textures.exists('player_idle_1')) {
-                    this.setTexture('player_idle_1');
-                }
+                console.warn(`Animation ${newAnimation} does not exist!`);
+                // Create fallback animation if needed
+                this.createFallbackAnimations();
             }
         }
     }
 
+
     // Animation methods - no scale tweens to prevent flickering
-    startRunningAnimation() {
+    startWalkingAnimation() {
         if (this.scene.anims.exists('player_walk')) {
             this.play('player_walk');
         }
@@ -536,7 +551,7 @@ class Player extends Phaser.Physics.Arcade.Sprite {
         }
     }
 
-    stopRunningAnimation() {
+    stopWalkingAnimation() {
         // Simply return to idle animation
         this.startIdleAnimation();
     }
@@ -545,14 +560,6 @@ class Player extends Phaser.Physics.Arcade.Sprite {
         this.scene.tweens.killTweensOf(this);
         // Don't change scale here - it's already set correctly
         console.log('🔧 Stopped all animation tweens');
-    }
-
-    resetToNormalScale() {
-        // FIXED: Use correct scale for 64x64 sprites
-        if (Math.abs(this.scaleX - 1.0) > 0.1) {
-            this.setScale(1.0);
-            console.log('🔧 Reset scale to 1.0 for 64x64 sprites');
-        }
     }
 
     updateState() {
@@ -578,7 +585,7 @@ class Player extends Phaser.Physics.Arcade.Sprite {
         // Update global game data with player position
         if (window.gameData.playerPosition) {
             window.gameData.playerPosition.x = this.x;
-            window.gameData.playerPosition.y = this.y;
+            window.gameData.playerPosition.y = this.y - this.body.height;
         }
 
         // Update movement velocity for game data
@@ -635,40 +642,51 @@ class Player extends Phaser.Physics.Arcade.Sprite {
         return this.state.onGround;
     }
 
-    // Fixed: Method to ensure player is properly positioned on ground
+    // FIXED: Method to ensure player is properly positioned on ground
     alignToGround() {
-        if (!window.gameData || !window.gameData.GROUND_Y) {
-            const groundY = window.gameData.GROUND_Y;
-            this.setY(groundY);
-            if (this.body) this.body.setVelocityY(0);
-            console.warn('Ground Y not defined in gameData');
-            return;
-        }
+        // Get ground level from game data or use default
+        const groundY = window.gameData?.GROUND_Y || 670;
 
-        const groundY = window.gameData.GROUND_Y;
-        
-        // FIXED: With origin (0.5, 1), sprite position should be exactly at groundY
-        this.setY(groundY);
+        // CRITICAL FIX: With origin (0.5, 1), the sprite's Y position IS the ground level
+        // The sprite bottom automatically aligns with the Y coordinate
+        this.setPosition(this.x, groundY);
 
         if (this.body) {
-            this.body.setVelocityY(0);
-            
-            // Wait a frame for physics to update, then check alignment
-            this.scene.time.delayedCall(16, () => {
-                const bodyBottom = this.body.y + this.body.height;
-                console.log(`✅ Ground alignment verification:`);
-                console.log(`- Sprite Y: ${this.y} (with origin 0.5, 1)`);
-                console.log(`- Body Y: ${this.body.y}`);
-                console.log(`- Body bottom: ${bodyBottom}`);
-                console.log(`- Ground Y: ${groundY}`);
-                console.log(`- Body bottom should be at or very close to ${groundY}`);
-                
-                // The body bottom should be at groundY for perfect contact
-                if (Math.abs(bodyBottom - groundY) > 5) {
-                    console.warn(`⚠️ Body alignment issue: body bottom ${bodyBottom} vs ground ${groundY}`);
-                }
-            });
+            this.body.velocity.y = 0; // Stop any falling velocity
+
+            // IMPORTANT: Update physics world immediately to sync body position
+            this.scene.physics.world.update(0, 0);
         }
+
+        // Force the character to be grounded
+        this.state.onGround = true;
+
+        console.log(`✅ Player aligned to ground at Y=${groundY} with origin (0.5, 1)`);
+
+        // Verification after physics update
+        this.scene.time.delayedCall(50, () => {
+            if (!this.body) return;
+
+            const spriteBottom = this.y; // With origin (0.5, 1), y IS the bottom
+            const bodyBottom = this.body.y + this.body.height;
+
+            console.log(`✅ Ground alignment verification:`);
+            console.log(`- Sprite Y (bottom): ${this.y}`);
+            console.log(`- Body Y: ${this.body.y}`);
+            console.log(`- Body bottom: ${bodyBottom}`);
+            console.log(`- Ground Y: ${groundY}`);
+            console.log(`- Body offset: (${this.body.offset.x}, ${this.body.offset.y})`);
+
+            // Check if body is properly positioned relative to ground
+            const bodyGroundDiff = Math.abs(bodyBottom - groundY);
+            if (bodyGroundDiff > 5) {
+                console.warn(`⚠️ Body alignment issue: body bottom ${bodyBottom} vs ground ${groundY} (diff: ${bodyGroundDiff})`);
+                // Force correct body position if needed
+                this.body.y = groundY - this.body.height;
+            } else {
+                console.log(`✅ Perfect ground alignment achieved! Body properly follows sprite.`);
+            }
+        });
     }
 
     testVisibility() {
@@ -706,21 +724,35 @@ class Player extends Phaser.Physics.Arcade.Sprite {
     }
 
     checkGrounding() {
-        if (!this.body || !window.gameData.GROUND_Y) return;
+        if (!this.body) return;
 
-        const groundY = window.gameData.GROUND_Y;
+        const groundY = window.gameData?.GROUND_Y || 670;
         const bodyBottom = this.body.y + this.body.height;
-        
-        console.log(`🔍 Grounding check: body bottom=${bodyBottom}, ground=${groundY}, touching=${this.body.touching.down}`);
+        const spriteBottom = this.y; // With origin (0.5, 1)
 
-        // FIXED: Check if body bottom is properly aligned with ground
-        if (bodyBottom > groundY + 10) { // Small tolerance
-            console.log(`🔧 Adjusting player: body bottom ${bodyBottom} -> should be near ${groundY}`);
-            // Calculate correct sprite Y position
-            const correctSpriteY = groundY;
-            this.setY(correctSpriteY);
+        console.log(`🔍 Grounding check:`);
+        console.log(`- Sprite bottom (Y): ${spriteBottom}`);
+        console.log(`- Body bottom: ${bodyBottom}`);
+        console.log(`- Ground Y: ${groundY}`);
+        console.log(`- Touching down: ${this.body.touching.down}`);
+
+        // Check if sprite is floating above ground
+        if (spriteBottom < groundY - 5) {
+            console.log(`🔧 Sprite floating: moving from ${spriteBottom} to ${groundY}`);
+            this.setY(groundY);
             this.body.setVelocityY(0);
         }
+
+        // Check if body is misaligned with ground
+        if (Math.abs(bodyBottom - groundY) > 10) {
+            console.log(`🔧 Body misaligned: body bottom ${bodyBottom} vs ground ${groundY}`);
+            // Let the sprite position drive the body position through physics
+            this.setY(groundY);
+            this.body.setVelocityY(0);
+        }
+
+        // Update grounded state based on actual physics
+        this.state.onGround = this.body.touching.down || Math.abs(bodyBottom - groundY) < 5;
     }
 
     // Enhanced debug method for positioning
@@ -730,14 +762,101 @@ class Player extends Phaser.Physics.Arcade.Sprite {
         console.log(`- Ground Y: ${window.gameData?.GROUND_Y || 'undefined'}`);
         console.log(`- Scale: ${this.scaleX}x${this.scaleY}`);
         if (this.body) {
+            console.log(`- Body position: (${this.body.x}, ${this.body.y})`);
             console.log(`- Body size: ${this.body.width}x${this.body.height}`);
-            console.log(`- Body offset: ${this.body.offset.x}, ${this.body.offset.y}`);
+            console.log(`- Body offset: (${this.body.offset.x}, ${this.body.offset.y})`);
+            console.log(`- Body bottom: ${this.body.y + this.body.height}`);
             console.log(`- Touching down: ${this.body.touching.down}`);
-            console.log(`- Velocity: ${this.body.velocity.x}, ${this.body.velocity.y}`);
+            console.log(`- Velocity: (${this.body.velocity.x}, ${this.body.velocity.y})`);
         }
-        console.log(`- Origin: ${this.originX}, ${this.originY}`);
+        console.log(`- Origin: (${this.originX}, ${this.originY})`);
         console.log(`- Movement speed: ${this.movementSpeed}`);
         console.log(`- Jump velocity: ${this.jumpVelocity}`);
+    }
+
+    // NEW: Method to visualize collision box for debugging
+    showCollisionBox() {
+        // Remove existing debug graphics
+        if (this.debugGraphics) {
+            this.debugGraphics.destroy();
+        }
+
+        // Create debug graphics to show collision box
+        this.debugGraphics = this.scene.add.graphics();
+        this.debugGraphics.setDepth(1000); // Above everything else
+
+        // Draw collision box outline
+        this.debugGraphics.lineStyle(2, 0xFF0000, 1); // Red outline
+        this.debugGraphics.strokeRect(
+            this.body.x,
+            this.body.y,
+            this.body.width,
+            this.body.height
+        );
+
+        // Draw sprite bounds for comparison
+        this.debugGraphics.lineStyle(2, 0x00FF00, 0.5); // Green outline
+        const spriteBounds = this.getBounds();
+        this.debugGraphics.strokeRect(
+            spriteBounds.x,
+            spriteBounds.y,
+            spriteBounds.width,
+            spriteBounds.height
+        );
+
+        console.log('🔍 Collision box visualization:');
+        console.log(`- RED box: Physics body (${this.body.x}, ${this.body.y}, ${this.body.width}x${this.body.height})`);
+        console.log(`- GREEN box: Visible sprite bounds`);
+
+        // Auto-remove after 5 seconds
+        this.scene.time.delayedCall(5000, () => {
+            if (this.debugGraphics) {
+                this.debugGraphics.destroy();
+                this.debugGraphics = null;
+            }
+        });
+    }
+
+    // NEW: Method to test and validate collision fixes
+    testCollisionFixes() {
+        console.log('🧪 TESTING COLLISION FIXES...');
+
+        const groundY = window.gameData?.GROUND_Y || 670;
+
+        // Test 1: Ground alignment
+        this.alignToGround();
+
+        // Test 2: Show collision box
+        this.showCollisionBox();
+
+        // Test 3: Movement test
+        console.log('🧪 Testing movement...');
+        const originalX = this.x;
+
+        // Move right
+        this.setVelocityX(200);
+        this.scene.time.delayedCall(500, () => {
+            console.log(`Movement test: moved from ${originalX} to ${this.x}`);
+            console.log(`Body follows: body.x = ${this.body.x}`);
+
+            // Stop and return
+            this.setVelocityX(0);
+            this.setPosition(originalX, groundY);
+        });
+
+        // Test 4: Jump test
+        this.scene.time.delayedCall(1000, () => {
+            console.log('🧪 Testing jump...');
+            this.setVelocityY(-400);
+
+            this.scene.time.delayedCall(1000, () => {
+                console.log('Jump test complete - checking ground alignment...');
+                this.checkGrounding();
+            });
+        });
+
+        console.log('🧪 Collision fix tests initiated. Watch console for results.');
+        return true;
     }
 
     getVelocity() {
@@ -756,6 +875,7 @@ class Player extends Phaser.Physics.Arcade.Sprite {
                 current: this.animationState.current,
                 isMoving: this.animationState.isMoving,
                 isJumping: this.animationState.isJumping,
+                isLanding: this.animationState.isLanding,
                 facingDirection: this.animationState.facingDirection
             },
             physics: {
@@ -780,11 +900,71 @@ class Player extends Phaser.Physics.Arcade.Sprite {
         };
     }
 
+    // NEW: Method to fix animation flickering and texture issues
+    fixAnimationFlickering() {
+        console.log('🔧 Fixing animation flickering and texture issues...');
+
+        // Stop all current animations to prevent conflicts
+        this.anims.stop();
+
+        // Ensure we have a stable, visible texture
+        if (this.scene.textures.exists('player_idle_1')) {
+            this.setTexture('player_idle_1');
+            console.log('✅ Set stable layered idle texture');
+        } else if (this.scene.textures.exists('player_male')) {
+            this.setTexture('player_male');
+            console.log('✅ Set fallback base texture');
+        } else {
+            console.error('❌ No valid player texture found!');
+            return;
+        }
+
+        // Ensure proper visibility and positioning
+        this.setVisible(true);
+        this.setAlpha(1);
+        this.setScale(2.0);
+        this.setDepth(window.gameData.DEPTHS.CHARACTERS);
+
+        // Align to ground properly
+        this.alignToGround();
+
+        // Start idle animation after a brief delay to ensure stability
+        this.scene.time.delayedCall(100, () => {
+            if (this.scene.anims.exists('player_idle')) {
+                try {
+                    this.play('player_idle');
+                    console.log('✅ Restarted stable idle animation');
+                } catch (error) {
+                    console.error('Error playing idle animation:', error);
+                }
+            }
+        });
+
+        console.log('✅ Animation flickering fix applied');
+    }
+
+    // NEW: Quick test method for collision and animation fixes
+    testAllFixes() {
+        console.log('🧪 TESTING ALL FIXES...');
+
+        // Fix animation issues
+        this.fixAnimationFlickering();
+
+        // Show collision box for visual verification
+        this.showCollisionBox();
+
+        // Debug current state
+        this.debugPositioning();
+
+        console.log('🧪 All fixes tested. Check visual results and console output.');
+        return true;
+    }
+
     createFallbackTexture(scene) {
         console.log('🔄 Creating player fallback texture...');
         const graphics = scene.add.graphics();
 
-        // Draw a simple but visible 64x64 character
+        // Draw a simple but visible 32x40 character
         graphics.fillStyle(0xDEB887); // Skin
         graphics.fillRect(16, 4, 32, 24); // Head
 
@@ -801,14 +981,14 @@ class Player extends Phaser.Physics.Arcade.Sprite {
         graphics.fillStyle(0x1E3A8A); // Pants
         graphics.fillRect(16, 52, 32, 12); // Pants
 
-        graphics.generateTexture('player_male', 64, 64);
+        graphics.generateTexture('player_male', 64, 80);
         graphics.destroy();
 
         console.log('✅ Player fallback texture created (64x64)');
     }
 
     createFallbackAnimations() {
-        console.log('🔄 Creating fallback animations...');
+        console.log('🔄 Creating fallback animations for 64x80 sprite...');
 
         // Use the main texture for all animations as fallback
         if (this.scene.textures.exists('player_male')) {
@@ -879,7 +1059,7 @@ class Player extends Phaser.Physics.Arcade.Sprite {
 
         // Check if player is being clipped by world bounds or camera
         this.checkWorldBounds();
-        
+
         // Validate all fixes are working
         this.validateFixes();
     }
@@ -887,32 +1067,122 @@ class Player extends Phaser.Physics.Arcade.Sprite {
     validateFixes() {
         console.log('🔍 VALIDATING ALL FIXES:');
         console.log('='.repeat(50));
-        
+
         // Check physics dimensions
-        const expectedBodySize = { width: 24, height: 48 }; // FIXED: Updated for 64x64 sprites
+        const expectedBodySize = { width: 64, height: 80 };
         const actualBodySize = { width: this.body.width, height: this.body.height };
-        const bodySizeCorrect = actualBodySize.width === expectedBodySize.width && 
-                               actualBodySize.height === expectedBodySize.height;
-        
+        const bodySizeCorrect = actualBodySize.width === expectedBodySize.width &&
+            actualBodySize.height === expectedBodySize.height;
+
         console.log(`✅ Body size: ${actualBodySize.width}x${actualBodySize.height} (expected: ${expectedBodySize.width}x${expectedBodySize.height}) - ${bodySizeCorrect ? 'CORRECT' : 'WRONG'}`);
-        
+
         // Check body position relative to ground
         const groundY = window.gameData.GROUND_Y;
         const bodyBottom = this.body.y + this.body.height;
         const groundContactGood = Math.abs(bodyBottom - groundY) < 20;
-        
+
         console.log(`✅ Ground contact: body bottom=${bodyBottom}, ground=${groundY}, diff=${Math.abs(bodyBottom - groundY)}px - ${groundContactGood ? 'GOOD' : 'BAD'}`);
-        
-        // Check sprite visibility - FIXED: Use 1.0 scale for 64x64 sprites
-        const spriteVisible = this.visible && this.alpha >= 1 && this.scaleX === 1.0 && this.scaleY === 1.0;
+
+        // Check sprite visibility - FIXED: Use 2.0 scale for 32x40 sprites
+        const spriteVisible = this.visible && this.alpha >= 1 && this.scaleX === 2.0 && this.scaleY === 2.0;
         console.log(`✅ Sprite visibility: visible=${this.visible}, alpha=${this.alpha}, scale=${this.scaleX}x${this.scaleY} - ${spriteVisible ? 'GOOD' : 'BAD'}`);
-        
+
         // Check input system
         const inputWorking = this.cursors && this.keys;
         console.log(`✅ Input system: cursors=${!!this.cursors}, keys=${!!this.keys} - ${inputWorking ? 'WORKING' : 'BROKEN'}`);
-        
+
         // Overall status
         const allGood = bodySizeCorrect && groundContactGood && spriteVisible && inputWorking;
         console.log('='.repeat(50));
+    }
+
+    validateSetup() {
+        console.log('🔍 VALIDATING PLAYER SETUP:');
+        console.log('='.repeat(40));
+
+        // Check visibility
+        const bounds = this.getBounds();
+        console.log(`- Sprite bounds: x=${bounds.x.toFixed(1)}, y=${bounds.y.toFixed(1)}, w=${bounds.width.toFixed(1)}, h=${bounds.height.toFixed(1)}`);
+        console.log(`- Visible: ${this.visible}, Alpha: ${this.alpha}, Scale: ${this.scaleX}x${this.scaleY}`);
+
+        // Check positioning
+        console.log(`- Position: (${this.x}, ${this.y})`);
+        console.log(`- Ground level: 670`);
+        console.log(`- Distance from ground: ${this.y - 670} (should be 0 for origin 0.5,1)`);
+
+        // Check physics
+        console.log(`- Body: (${this.body.x}, ${this.body.y}) size ${this.body.width}x${this.body.height}`);
+        console.log(`- Body bottom: ${this.body.y + this.body.height} (should be ~670)`);
+        console.log(`- Movement speed: ${this.movementSpeed}`);
+
+        // Force visibility if needed
+        if (!this.visible || this.alpha < 1 || bounds.width < 50) {
+            console.warn('⚠️ Character not visible! Forcing visibility...');
+            this.setVisible(true);
+            this.setAlpha(1);
+            this.setScale(2.0);
+            this.setDepth(999);
+        }
+
+        // Check if positioned correctly
+        if (Math.abs(this.y - 670) > 5) {
+            console.warn('⚠️ Character not on ground! Repositioning...');
+            this.alignToGround();
+        }
+
+        console.log('✅ Player setup validation complete');
+    }
+
+    validatePhysicsAlignment() {
+        console.log('🔍 PHYSICS ALIGNMENT VALIDATION:');
+        console.log('='.repeat(50));
+
+        // Sprite information
+        const spriteBounds = this.getBounds();
+        console.log('SPRITE:');
+        console.log(`- Position: (${this.x}, ${this.y})`);
+        console.log(`- Origin: (${this.originX}, ${this.originY})`);
+        console.log(`- Scale: ${this.scaleX}x${this.scaleY}`);
+        console.log(`- Visual bounds: x=${spriteBounds.x.toFixed(1)}, y=${spriteBounds.y.toFixed(1)}, w=${spriteBounds.width.toFixed(1)}, h=${spriteBounds.height.toFixed(1)}`);
+        console.log(`- Visual bottom: ${(spriteBounds.y + spriteBounds.height).toFixed(1)}`);
+
+        // Physics body information
+        console.log('\nPHYSICS BODY:');
+        console.log(`- Body position: (${this.body.x}, ${this.body.y})`);
+        console.log(`- Body size: ${this.body.width}x${this.body.height}`);
+        console.log(`- Body offset: (${this.body.offset.x}, ${this.body.offset.y})`);
+        console.log(`- Body bottom: ${this.body.y + this.body.height}`);
+        console.log(`- Body center: (${this.body.x + this.body.width / 2}, ${this.body.y + this.body.height / 2})`);
+
+        // Ground alignment
+        const groundY = 670;
+        const bodyBottom = this.body.y + this.body.height;
+        const spriteBottom = spriteBounds.y + spriteBounds.height;
+
+        console.log('\nGROUND ALIGNMENT:');
+        console.log(`- Ground level: ${groundY}`);
+        console.log(`- Sprite bottom: ${spriteBottom.toFixed(1)} (distance from ground: ${(spriteBottom - groundY).toFixed(1)})`);
+        console.log(`- Body bottom: ${bodyBottom} (distance from ground: ${bodyBottom - groundY})`);
+
+        // Validation results
+        const bodyAligned = Math.abs(bodyBottom - groundY) <= 5;
+        const spriteAligned = Math.abs(spriteBottom - groundY) <= 5;
+        const bodyWithinSprite = this.body.x >= spriteBounds.x &&
+            this.body.x + this.body.width <= spriteBounds.x + spriteBounds.width;
+
+        console.log('\nVALIDATION RESULTS:');
+        console.log(`✅ Body aligned with ground (±5px): ${bodyAligned ? 'PASS' : 'FAIL'}`);
+        console.log(`✅ Sprite aligned with ground (±5px): ${spriteAligned ? 'PASS' : 'FAIL'}`);
+        console.log(`✅ Body within sprite bounds: ${bodyWithinSprite ? 'PASS' : 'FAIL'}`);
+
+        const allPassed = bodyAligned && spriteAligned && bodyWithinSprite;
+        console.log(`\n🎯 OVERALL PHYSICS ALIGNMENT: ${allPassed ? 'PERFECT!' : 'NEEDS FIXING'}`);
+
+        return {
+            bodyAligned,
+            spriteAligned,
+            bodyWithinSprite,
+            allPassed
+        };
     }
 }

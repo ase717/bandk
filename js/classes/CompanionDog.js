@@ -3,7 +3,7 @@
  */
 class CompanionDog extends Phaser.Physics.Arcade.Sprite {
     constructor(scene, x, y) {
-        super(scene, x, y, 'kopus');
+        super(scene, x, y, 'companion_dog');
         
         // Add to scene
         scene.add.existing(this);
@@ -17,12 +17,36 @@ class CompanionDog extends Phaser.Physics.Arcade.Sprite {
         
         console.log(`Companion dog created at (${x}, ${y})`);
     }
+
+    createCompanion(homeX, homeY) {
+            console.log('🎨 Creating companion dog...');
+        
+            this.setOrigin(0.5, 1);
+            this.setScale(1.3);
+            this.setDepth(window.gameData.DEPTHS.CHARACTERS);
+        
+            // Sadece spawn ile ilgili veri ayarları
+            this.setData('type', 'companion_dog');
+            this.setData('homeX', homeX);
+            this.setData('homeY', homeY);
+            this.setData('wanderTimer', 0);
+            this.setData('isScared', false);
+            this.setData('scareTimer', 0);
+        
+            // Collider ekle
+            this.scene.physics.add.collider(this, this.scene.ground);
+        
+            // Idle animasyonu başlat
+            this.play('companion_dog_idle');
+        
+            console.log('✅ Companion dog created and initialized');
+    }
     
     setupPhysics() {
         // FIXED: Physics properties to match player character scale (64x64)
         this.setCollideWorldBounds(true);
         this.setBounce(0.2);
-        this.setScale(1.0); // Same scale as player (no scaling for 64x64)
+        this.setScale(1.3); // Same scale as player (no scaling for 64x64)
         this.setOrigin(0.5, 1); // Bottom-center anchor - EXACTLY same as player
         
         // FIXED: Proper collision body for 64x64 dog sprite (proportional to player)
@@ -105,9 +129,27 @@ class CompanionDog extends Phaser.Physics.Arcade.Sprite {
     }
     
     setupAnimations() {
-        // For now, we'll use a single sprite without animations
-        // Animations will be implemented in the next task with proper sprite sheets
-        console.log('CompanionDog: Using single sprite (animations will be implemented in next task)');
+        
+            // Animasyonu başlat
+            if (!this.scene.anims.exists('companion_dog_idle')) {
+                this.scene.anims.create({
+                    key: 'companion_dog_idle',
+                    frames: this.scene.anims.generateFrameNumbers('companion_dog_idle', { start: 0, end: 3 }),
+                    frameRate: 3,
+                    repeat: -1
+                });
+            }
+    
+            if (!this.scene.anims.exists('companion_dog_walk')) {
+                this.scene.anims.create({
+                    key: 'companion_dog_walk',
+                    frames: this.scene.anims.generateFrameNumbers('companion_dog_walk', { start: 0, end: 5 }),
+                    frameRate: 6,
+                    repeat: -1
+                });
+            }
+    
+        console.log('✅ Companion dog animations created');
     }
     
     initializeAI() {
@@ -390,29 +432,17 @@ class CompanionDog extends Phaser.Physics.Arcade.Sprite {
     }
     
     updateAnimations() {
-        // Update movement state for animations
-        this.movement.isMoving = Math.abs(this.body.velocity.x) > 10;
-        this.state.onGround = this.body.touching.down;
-        
-        // Enhanced running animation system - FIXED: Prevent jittering
-        const wasRunning = this.animationState.isRunning;
-        
-        // Update animation states
-        this.animationState.isJumping = !this.state.onGround;
-        this.animationState.isRunning = this.state.onGround && this.movement.isMoving;
-        this.animationState.isIdle = this.state.onGround && !this.movement.isMoving;
-        
-        // Apply visual effects and animations based on state - FIXED: Reduce tint changes
-        if (this.animationState.isJumping) {
-            this.stopRunningAnimation();
-        } else if (this.animationState.isRunning) {
-            if (!wasRunning) {
-                this.startRunningAnimation();
-            }
-        } else {
-            this.stopRunningAnimation();
-        }
+        if (!this.body) return;
+
+    const isMoving = Math.abs(this.body.velocity.x) > 10;
+    const onGround = this.body.touching.down;
+
+    if (isMoving) {
+        this.anims.play('companion_dog_walk', true);
+    } else {
+        this.anims.play('companion_dog_idle', true);
     }
+}
     
     startRunningAnimation() {
         // Stop any existing running animation

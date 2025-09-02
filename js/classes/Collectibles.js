@@ -120,6 +120,7 @@ class Collectibles extends Phaser.Physics.Arcade.Group {
         collectible.body.immovable = true; // Correct property for Arcade Physics
         collectible.body.allowGravity = false; // Prevent falling
         collectible.body.setVelocity(0, 0); // No movement
+        collectible.body.moves = false;
 
         // Set collision box size (adjust based on sprite size)
         const bodySize = Math.min(collectible.width * 0.8, collectible.height * 0.8);

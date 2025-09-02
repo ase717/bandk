@@ -1,6 +1,6 @@
 /**
  * EnvironmentManager - Parallax Background System with Theme Transitions
- * Implements two-stack system (A/B) with smooth theme transitions
+ * Implements three-stack system (A/B/C) with smooth theme transitions
  */
 class EnvironmentManager {
     constructor(scene) {
@@ -8,7 +8,7 @@ class EnvironmentManager {
         this.worldWidth = window.gameData.segment1Width; // 6000px
         this.worldHeight = window.gameData.gameHeight; // 720px
 
-        // Two-stack system for smooth theme transitions
+        // Three-stack system for smooth theme transitions
         this.stackA = { // Active stack
             sky: null,
             far: null,
@@ -25,10 +25,19 @@ class EnvironmentManager {
             near: null,
             ground: null,
             alpha: 0
+        };    
+
+        this.stackC = {
+            sky: null,
+            far: null,
+            mid: null,
+            near: null,
+            ground: null,
+            alpha: 0
         };
 
         // Available themes
-        this.themes = ['sea', 'forest'];
+        this.themes = ['sea', 'forest', 'cottonfield'];
         this.currentThemeIndex = 0;
 
         // Parallax speeds
@@ -50,7 +59,7 @@ class EnvironmentManager {
     }
 
     create() {
-        console.log('🎨 Creating two-stack parallax background system...');
+        console.log('🎨 Creating three-stack parallax background system...');
 
         // Initialize Stack A with first theme (sea)
         this.createThemeStack(this.stackA, this.themes[0]);
@@ -59,6 +68,11 @@ class EnvironmentManager {
         this.createThemeStack(this.stackB, this.themes[1]);
         this.stackB.alpha = 0;
         this.setStackAlpha(this.stackB, 0);
+
+        this.createThemeStack(this.stackC, this.themes[2]);
+        this.stackC.alpha = 0;
+        this.setStackAlpha(this.stackC, 0);
+
 
         console.log('✅ Two-stack parallax system created with smooth theme transitions');
     }
@@ -71,6 +85,8 @@ class EnvironmentManager {
             this.createSeaTheme(stack);
         } else if (theme === 'forest') {
             this.createForestTheme(stack);
+        } else if (theme === 'cottonfield') {
+            this.createCottonfieldTheme(stack);
         }
 
         // Set parallax scroll factors and depths for all children in groups
@@ -118,6 +134,18 @@ class EnvironmentManager {
 
         // Create ground tiles for forest theme
         this.createGroundTiles(stack, 'forest');
+    }
+
+    createCottonfieldTheme(stack) {
+        this.createThemeWithProperFitting(stack, 'cottonfield', {
+            sky: 'cottonfield_sky',
+            far: 'cottonfield_far',
+            mid: 'cottonfield_mid',
+            near: 'cottonfield_near'
+        });
+
+        // Create ground tiles for cottonfield theme
+        this.createGroundTiles(stack, 'cottonfield');
     }
 
     createThemeWithProperFitting(stack, themeName, assetKeys) {
@@ -268,6 +296,7 @@ class EnvironmentManager {
 
         this.setStackAlpha(this.stackA, fadeOutAlpha);
         this.setStackAlpha(this.stackB, fadeInAlpha);
+        this.setStackAlpha(this.stackC, fadeInAlpha);
 
         // Transition complete
         if (progress >= 1) {
@@ -287,6 +316,7 @@ class EnvironmentManager {
         // Ensure Stack A is fully visible, Stack B is invisible
         this.setStackAlpha(this.stackA, 1);
         this.setStackAlpha(this.stackB, 0);
+        this.setStackAlpha(this.stackC, 0);
 
         // Prepare next theme for Stack B
         const nextThemeIndex = (this.currentThemeIndex + 1) % this.themes.length;
@@ -295,6 +325,10 @@ class EnvironmentManager {
         this.destroyStack(this.stackB);
         this.createThemeStack(this.stackB, nextTheme);
         this.setStackAlpha(this.stackB, 0);
+
+        this.destroyStack(this.stackC);
+        this.createThemeStack(this.stackC, nextTheme);
+        this.setStackAlpha(this.stackC, 0);
     }
 
     destroyStack(stack) {
